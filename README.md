@@ -93,7 +93,7 @@ DEBU Successfully pinged the Forgejo instance server
 INFO Runner registered successfully.
 ```
 
-### Part 5: Run as a syetmd service:
+### Part 5: Run as a systemd service:
 
 ---
 
