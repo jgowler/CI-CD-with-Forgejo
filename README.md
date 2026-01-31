@@ -1,4 +1,4 @@
-# CI/CD with Forgejo and Forgejo Runners
+# CI with Forgejo and Forgejo Runners
 
 This is a project to set up Forgejo and Forgejo Runners to create a CI/CD pipeline using Docker.
 
