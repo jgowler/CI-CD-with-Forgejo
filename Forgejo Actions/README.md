@@ -176,7 +176,7 @@ In summary this does the following:
 3. The Runner will create a container using the `hashicorp/terraform:latest` image.
 4. It will then go through each step to do the following:
 - Install Python3, pip, nodejs, and npm.
-- Checkour the repository using `actions/checkout@v4`.
+- Checkout the repository using `actions/checkout@v4`.
 - Initialise the TF code with no backend.
 - Format the TF code.
 - Validate the TF config.
@@ -186,5 +186,11 @@ In summary this does the following:
 Each section has `working-directory: Terraform/` to ensure that the steps are run in the Terraform/ folder pulled from the remote repo.
 
 To test this I used AI to generate a very basic TF script. This script and the TF-test.yaml can be found alongside this README.md.
+
+---
+
+## Part 9: What's next?
+
+This was just an example run on how to get FA up and running. There is a lot more complex configs to be created, not just reacting to pushes. To go further I'd work on pull request triggers, Python code linting, building Docker images, there are so many options to choose from.
 
 ---
