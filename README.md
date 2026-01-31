@@ -55,7 +55,7 @@ Test Runner using `forgejo-runner -v`. If this returns the version then we are g
 
 ---
 
-## Part 3a: Set up Runner user
+## Part 3: Set up Runner user
 
 This part is very straight forward; create the `runner` user and add it to the `docker` group:
 
@@ -66,7 +66,7 @@ usermod -aG docker runner
 
 This will allow the `runner` user to access Docker in the VM.
 
-### Part 3b: Register the runner
+### Part 4: Register the runner
 
 The runner needs to be registered to recieve tasks from Forgejo. This is done by entering the following on the Runner VM:
 
@@ -92,6 +92,45 @@ INFO Registering runner, name=docker, instance=http://forgejo-vm-IP/, labels=[do
 DEBU Successfully pinged the Forgejo instance server
 INFO Runner registered successfully.
 ```
-Now with the Forgejo VM set up and the Runner VM set up with Docker it is now time to test.
+
+### Part 5: Run as a syetmd service:
+
+---
+
+Copy the following to `/etc/systemd/system/forgejo-runner.service`:
+
+```
+[Unit]
+Description=Forgejo Runner
+Documentation=https://forgejo.org/docs/latest/admin/actions/
+After=docker.service
+
+[Service]
+ExecStart=/usr/local/bin/forgejo-runner daemon
+ExecReload=/bin/kill -s HUP $MAINPID
+
+# This user and working directory must already exist
+User=runner 
+WorkingDirectory=/home/runner
+Restart=on-failure
+TimeoutSec=0
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+Then run `systemctl daemon-reload` to reload the unit files. Make sure to start and enable the service:
+```
+systemctl start forgejo-runner.service
+systemctl enable forgejo-runner.service
+```
+The runner in Forgejo will now show as `Idle` instead of `Offline`.
+
+You can use the following to check the runner logs:
+```
+journalctl -u forgejo-runner.service
+```
+
+And that is it, Forgejo is set up and the Runner is ready to test.
 
 ---
