@@ -51,7 +51,7 @@ To check if this is successful go to the repo and check the `Actions` tab. Here 
 
 ---
 
-## Part 7: Testing pushed code
+## Part 7: Install Terraform on Runner VM
 
 In this example a file will be created in `workflows` to test some sample Terraform code pushed to the repo. For the Runner to process this Terraform will need to be installed on the host VM:
 
@@ -59,19 +59,19 @@ In this example a file will be created in `workflows` to test some sample Terraf
 ```
 sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
 ```
-Install HashiCorp's GPG key.
+2. Install HashiCorp's GPG key.
 ```
 wget -O- https://apt.releases.hashicorp.com/gpg | \
 gpg --dearmor | \
 sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
 ```
-Verify the GPG key's fingerprint.
+3. Verify the GPG key's fingerprint.
 ```
 gpg --no-default-keyring \
 --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg \
 --fingerprint
 ```
-The gpg command reports the key fingerprint:
+4. The gpg command reports the key fingerprint:
 ```
 /usr/share/keyrings/hashicorp-archive-keyring.gpg
 -------------------------------------------------
@@ -80,19 +80,19 @@ AAAA AAAA AAAA AAAA
 uid         [ unknown] HashiCorp Security (HashiCorp Package Signing) <security+packaging@hashicorp.com>
 sub   rsa4096 XXXX-XX-XX [E]
 ```
-Add the official HashiCorp repository to your system.
+5. Add the official HashiCorp repository to your system.
 ```
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
 ```
-Update apt to download the package information from the HashiCorp repository.
+6. Update apt to download the package information from the HashiCorp repository.
 ```
 sudo apt update
 ```
-Install Terraform from the new repository.
+7. Install Terraform from the new repository.
 ```
 sudo apt-get install terraform
 ```
-Verify installation
+8. Verify installation
 ```
 terraform -help
 
@@ -105,3 +105,86 @@ less common or more advanced commands.
 Main commands:
 ##...
 ```
+Now that Terraform is installed on the VM the next step is to build create the workflow YAML.
+
+---
+
+## Part 8: Create `TF-test.yaml`
+
+For the runner to test the TF code it will need to clone the repo. This can be achieved using `https://data.forgejo.org/actions/checkout@v4`, this will clone the repo. More on this can be found in the docs: https://forgejo.org/docs/next/user/actions/reference/
+
+Repo Structure:
+
+```
+Repo
+    .forgejo
+        workflows
+            TF-test.yaml
+    Terraform
+        main.tf
+```
+What I will create is a workflow to check any commits pushed to the Terraform folder ONLY. I do not want this to test commits to anywhere else (just yet at least).
+
+```
+TF-test.yaml
+
+on:
+  push:
+    paths:
+      - 'Terraform/**'
+
+jobs:
+  TF-test:
+    runs-on: docker
+    container:
+      image: hashicorp/terraform:latest
+    steps:
+      - name: Install Python, pip, nodejs, and npm
+        run: apk add --no-cache python3 py3-pip nodejs npm
+    
+      - name: Checkout repository
+        uses: https://data.forgejo.org/actions/checkout@v4
+
+      - name: Initialise TF code (no remote state)
+        run: terraform init -backend=false
+        working-directory: Terraform/
+      
+      - name: Format TF code
+        run: terraform fmt -recursive
+        working-directory: Terraform/
+      
+      - name: Validate TF config
+        run: terraform validate
+        working-directory: Terraform/
+
+      - name: Policy check (Checkov)
+        run: |
+          python3 -m venv /tmp/venv
+          . /tmp/venv/bin/activate
+          pip install --upgrade pip
+          pip install checkov
+          checkov -d Terraform
+
+      - name: Terraform plan
+        run: terraform plan -no-color
+        working-directory: Terraform/
+```
+In summary this does the following:
+
+1. On commits pushed to the `Terraform` folder in the repo...
+2. The job `TF-test` will run on an available Runner with the label `docker`.
+3. The Runner will create a container using the `hashicorp/terraform:latest` image.
+4. It will then go through each step to do the following:
+- Install Python3, pip, nodejs, and npm.
+- Checkour the repository using `actions/checkout@v4`.
+- Initialise the TF code with no backend.
+- Format the TF code.
+- Validate the TF config.
+- Run a policy check using Checkov in a Python venv.
+- Run TF plan.
+
+Each section has `working-directory: Terraform/` to ensure that the steps are run in the Terraform/ folder pulled from the remote repo.
+
+To test this I used AI to generate a very basic TF script. This scrip and the TF-test.yaml can be found alongside this README.md.
+
+---
