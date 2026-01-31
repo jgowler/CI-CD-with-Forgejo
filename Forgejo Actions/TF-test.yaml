@@ -1,0 +1,40 @@
+on:
+  push:
+    paths:
+      - 'Terraform/**'
+
+jobs:
+  TF-test:
+    runs-on: docker
+    container:
+      image: hashicorp/terraform:latest
+    steps:
+      - name: Install Python, pip, nodejs, and npm
+        run: apk add --no-cache python3 py3-pip nodejs npm
+    
+      - name: Checkout repository
+        uses: https://data.forgejo.org/actions/checkout@v4
+
+      - name: Initialise TF code (no remote state)
+        run: terraform init -backend=false
+        working-directory: Terraform/
+      
+      - name: Format TF code
+        run: terraform fmt -recursive
+        working-directory: Terraform/
+      
+      - name: Validate TF config
+        run: terraform validate
+        working-directory: Terraform/
+
+      - name: Policy check (Checkov)
+        run: |
+          python3 -m venv /tmp/venv
+          . /tmp/venv/bin/activate
+          pip install --upgrade pip
+          pip install checkov
+          checkov -d Terraform
+
+      - name: Terraform plan
+        run: terraform plan -no-color
+        working-directory: Terraform/

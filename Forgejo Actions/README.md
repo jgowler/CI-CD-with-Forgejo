@@ -185,6 +185,6 @@ In summary this does the following:
 
 Each section has `working-directory: Terraform/` to ensure that the steps are run in the Terraform/ folder pulled from the remote repo.
 
-To test this I used AI to generate a very basic TF script. This scrip and the TF-test.yaml can be found alongside this README.md.
+To test this I used AI to generate a very basic TF script. This script and the TF-test.yaml can be found alongside this README.md.
 
 ---
