@@ -189,8 +189,37 @@ To test this I used AI to generate a very basic TF script. This script and the T
 
 ---
 
-## Part 9: What's next?
+## Part 9: Branch protection - Pull requests
 
-This was just an example run on how to get FA up and running. There is a lot more complex configs to be created, not just reacting to pushes. To go further I'd work on pull request triggers, Python code linting, building Docker images, there are so many options to choose from.
+It is common to require peer review of code before it is commited to the main branch of a repo to ensure there is nothing added that may break existing code. One example of this would be for a team using 'GitOps' to deploy infrastructure using tools such as FluxCD or ArgoCD as this may update shortly after updating the code (depending on sync settings).
 
----
+To prevent this from happening set the following in the repo settings:
+
+`Branches > Branch protection: Add new rule > Required approvals: 1 > Enable "Dismiss stale approvals" > Save rule`
+
+### Generate Token
+
+To push changes remotely to the repo an Access Token is required to be used to authenticate:
+
+```
+Profile in top right corner > Settings
+Applications > Token name: "Insert name here"
+Select permissions > repository: Read and Write
+Generate Token
+```
+This token will be used to authenticate pushes to the repo from local machine.
+
+### Clone repo and create new branch
+
+Next, clone the repo to local machine using `git clone <repo URL>` then `git switch main`, followed by `git pull origin main`. Then, create a branch using `git switch -c <reponame>/<branchname>`. For this, I used `git switch -c test/pr-actions`. Confirm using `git branch --show-current`, for me this returned `test/pr-actions`.
+
+Now, `touch pr-test` created a new file in this branch ready to be commited. `git status` shows that this file is untracked. `git add <filename>` will stage this to be commited. Use `git status` again to show the file is now part of the change to be commited and the branch it will be commited to which is test/pr-actions.
+
+To commit this change use `git commit -m "Add comment here"` to get this staged to be pushed. Your Access Token will be used as the password.
+
+You will now see confirmation in the terminal that this commit has been pushed on the `pr-actions` branch. Head back over to the repo to see that  a `New pull request` button is now there. Follow the on-screen prompts and submit the request. There will be a warning that there have not been enough approvals yet (1). 
+
+NOTE: I am the only user accessing this repo for testing so I cannot finish the review under the `Files changed` tab. Instead, I will choose `Create merge commit` under the `Conversation` tab as authors are unable to approve their own pull requests.
+
+## Part 10: Pull request triggered Actions
+
