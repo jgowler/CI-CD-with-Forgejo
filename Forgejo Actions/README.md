@@ -223,3 +223,12 @@ NOTE: I am the only user accessing this repo for testing so I cannot finish the 
 
 ## Part 10: Pull request triggered Actions
 
+This Action will run on the following trigger insted of `push`:
+
+```
+on:
+  pull_request:
+    types: [opened, synchronized, edited]
+...
+```
+
