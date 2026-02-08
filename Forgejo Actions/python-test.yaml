@@ -1,0 +1,30 @@
+on:
+  pull_request:
+    paths:
+      - 'Python/**'
+
+jobs:
+  Python-Lint-and-Unit-test:
+    runs-on: docker
+    container: python:3.11.14-alpine3.23
+    steps:
+
+      - name: Install Node.js
+        run: apk add nodejs npm
+      
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      
+      - name: Install Python requirements
+        run: pip install -r requirements.txt
+        working-directory: Python/
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Lint using Ruff
+        run: ruff check .
+
+      - name: Run main.py
+        run: python main.py
+        working-directory: Python/

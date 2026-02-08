@@ -231,7 +231,7 @@ on:
     types:
     - opened
     - synchronized
-    - edited
+    - edited2
 ...
 ```
 Once the pull request has been submitted this Action will run and test the code. For this I will continue using Terraform tests in a Docker container on the Runner VM.
