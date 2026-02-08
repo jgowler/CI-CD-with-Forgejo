@@ -241,3 +241,20 @@ Once the pull request has been submitted this Action will run and test the code.
 With the Actions stored in the `main` branch we can create a new branch from `main` and it will contain the Actions from main, meaning when you push changes on the bracnh and a pull request made the Action will trigger. All Actions are on `main` so these will be ready to use once a branch is created and any changes pushed and pull requests made.
 
 At this time, the pull request Action works with any files requested to be merged into `main` but this could be refined down to specific folders, meaning if you wanted to break down different folders in the repo for different languages, such as a Terraform folder for only TF files, then this can be done.
+
+## Part 12: Python testing
+
+In the `Python` folder is a `main.py`, `requirements.txt`, with a `python-test.yaml` file to test (see files).
+
+The `main.py` will pull a random joke from the internet and the `requirements.txt` file contains the required packages. The `python-test.yaml` will test the Python file when a pull request is submitted. This will do the following:
+
+```
+- Run on a Docker installed VM
+- Create a Python container using an image from Dockerhub
+- Install Node.js and npm
+- Clone the Repo
+- Install the Python requirements from the requirements.txt file (from the Python directory)
+- Install Ruff
+- Lint the Python files using Ruff
+- Run the main.py to check it works (from the Python directory).
+```
