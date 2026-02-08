@@ -228,7 +228,16 @@ This Action will run on the following trigger insted of `push`:
 ```
 on:
   pull_request:
-    types: [opened, synchronized, edited]
+    types:
+    - opened
+    - synchronized
+    - edited
 ...
 ```
+Once the pull request has been submitted this Action will run and test the code. For this I will continue using Terraform tests in a Docker container on the Runner VM.
 
+## Part 11: Branching and PR's
+
+With the Actions stored in the `main` branch we can create a new branch from `main` and it will contain the Actions from main, meaning when you push changes on the bracnh and a pull request made the Action will trigger. All Actions are on `main` so these will be ready to use once a branch is created and any changes pushed and pull requests made.
+
+At this time, the pull request Action works with any files requested to be merged into `main` but this could be refined down to specific folders, meaning if you wanted to break down different folders in the repo for different languages, such as a Terraform folder for only TF files, then this can be done.
